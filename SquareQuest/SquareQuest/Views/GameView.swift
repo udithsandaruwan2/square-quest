@@ -18,11 +18,7 @@ struct GameView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundStyle(
-                    LinearGradient(
-                        colors: [.blue, .purple],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+                    Color.black
                 )
             
             // Difficulty Picker
@@ -121,11 +117,7 @@ struct GameView: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(
-                LinearGradient(
-                    colors: [.blue, .purple],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
+                Color.black
             )
             .cornerRadius(12)
             .shadow(color: .blue.opacity(0.3), radius: 5, x: 0, y: 3)
