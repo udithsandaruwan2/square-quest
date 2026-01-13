@@ -13,6 +13,7 @@ A colorful memory-matching puzzle game built with SwiftUI, demonstrating modern 
 Square Quest is an educational SwiftUI project that implements a color-matching game with three difficulty levels. Players tap pairs of colored squares to find matches, earning points for correct selections.
 
 **Perfect for:**
+
 - Learning SwiftUI fundamentals
 - Understanding MVVM architecture
 - Practicing state management
@@ -42,12 +43,14 @@ Square Quest is an educational SwiftUI project that implements a color-matching 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/yourusername/square-quest.git
    cd square-quest
    ```
 
 2. **Open in Xcode**
+
    ```bash
    cd SquareQuest
    open SquareQuest.xcodeproj
@@ -138,18 +141,21 @@ This project demonstrates:
 Easy to customize and extend:
 
 **Change Colors:**
+
 ```swift
 // In GameViewModel.swift
 let availableColors: [Color] = [.red, .blue, .green, ...]
 ```
 
 **Adjust Difficulty:**
+
 ```swift
 // In Difficulty.swift
 case easy: return 4  // 4×4 grid instead of 3×3
 ```
 
 **Modify Scoring:**
+
 ```swift
 // In GameViewModel.swift
 self.score += 20  // 20 points per match
@@ -219,4 +225,4 @@ Questions or feedback? Open an issue or reach out!
 
 **Happy Coding! 🚀**
 
-*For detailed code explanations, check out [DOCUMENTATION.md](DOCUMENTATION.md)*
+_For detailed code explanations, check out [DOCUMENTATION.md](DOCUMENTATION.md)_

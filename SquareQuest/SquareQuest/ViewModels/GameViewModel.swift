@@ -14,6 +14,7 @@ class GameViewModel: ObservableObject {
     @Published var cells: [Cell] = []
     @Published var score: Int = 0
     @Published var selectedCells: [UUID] = []
+    @Published var showWinAlert: Bool = false
     
     init() {
         setupGame()
@@ -23,6 +24,7 @@ class GameViewModel: ObservableObject {
     func setupGame() {
         score = 0
         selectedCells = []
+        showWinAlert = false
         cells = generateCells()
     }
     
@@ -136,11 +138,18 @@ class GameViewModel: ObservableObject {
     
     /// Checks if all cells are matched (game complete)
     private func checkGameComplete() {
-        let allMatched = cells.allSatisfy { $0.isMatched }
-        if allMatched {
-            // Game complete! Could show an alert or celebration
+        // Count how many cells are matched
+        let matchedCount = cells.filter { $0.isMatched }.count
+        
+        // Since we have odd number of cells (9, 25, 49), there's always 1 leftover
+        // Win when all pairs are matched (total cells - 1)
+        let totalCells = difficulty.totalCells
+        let maxMatchable = totalCells - 1
+        
+        if matchedCount == maxMatchable {
+            // Game complete! Show win alert
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                // Auto-restart or show completion message
+                self.showWinAlert = true
             }
         }
     }

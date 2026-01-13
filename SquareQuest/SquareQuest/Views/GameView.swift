@@ -48,6 +48,18 @@ struct GameView: View {
             )
             .ignoresSafeArea()
         )
+        .alert("🎉 Congratulations!", isPresented: $viewModel.showWinAlert) {
+            Button("Play Again") {
+                withAnimation {
+                    viewModel.resetGame()
+                }
+            }
+            Button("Change Difficulty", role: .cancel) {
+                // Alert dismisses automatically
+            }
+        } message: {
+            Text("You won with a score of \(viewModel.score)!\n\nAll pairs matched successfully. 🏆")
+        }
     }
     
     private var difficultyPicker: some View {
