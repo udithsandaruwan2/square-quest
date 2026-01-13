@@ -39,6 +39,7 @@ SquareQuest/
 ### Models
 
 **Cell.swift**
+
 ```swift
 struct Cell: Identifiable, Equatable {
     let id: UUID        // Unique identifier
@@ -49,6 +50,7 @@ struct Cell: Identifiable, Equatable {
 ```
 
 **Difficulty.swift**
+
 ```swift
 enum Difficulty {
     case easy    // 3×3 = 9 cells
@@ -62,12 +64,14 @@ enum Difficulty {
 ### ViewModel
 
 **GameViewModel.swift**
+
 - `@Published var difficulty` → Current difficulty level
 - `@Published var cells` → Array of all grid cells
 - `@Published var score` → Current score
 - `@Published var selectedCells` → IDs of selected cells
 
 **Key Methods:**
+
 - `setupGame()` → Initialize new game
 - `selectCell(_ cell)` → Handle cell tap
 - `checkForMatch()` → Compare selected cells
@@ -78,6 +82,7 @@ enum Difficulty {
 ### Views
 
 **GameView.swift** - Main screen
+
 - Title
 - Difficulty picker (segmented control)
 - Score display
@@ -85,11 +90,13 @@ enum Difficulty {
 - Reset button
 
 **GridView.swift** - Grid container
+
 - Dynamic columns based on difficulty
 - Uses LazyVGrid for performance
 - Passes tap events to parent
 
 **CellView.swift** - Individual cell
+
 - Colored square with rounded corners
 - Visual states: normal, selected, matched
 - Spring animations on interaction
@@ -99,6 +106,7 @@ enum Difficulty {
 ## 🎨 Customization Quick Tips
 
 ### Change Colors
+
 ```swift
 // In GameViewModel.swift → generateCells()
 let availableColors: [Color] = [
@@ -108,12 +116,14 @@ let availableColors: [Color] = [
 ```
 
 ### Adjust Scoring
+
 ```swift
 // In GameViewModel.swift → checkForMatch()
 self.score += 10  // Change points per match
 ```
 
 ### Modify Grid Sizes
+
 ```swift
 // In Difficulty.swift
 case easy: return 4   // 4×4 instead of 3×3
@@ -121,6 +131,7 @@ case medium: return 6 // 6×6 instead of 5×5
 ```
 
 ### Animation Speed
+
 ```swift
 // In GameViewModel.swift
 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) // Match delay
@@ -131,17 +142,17 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) // Reset delay
 
 ## 🔑 SwiftUI Concepts Used
 
-| Concept | Where Used | Purpose |
-|---------|------------|---------|
-| `@State` | N/A in this project | Local view state |
-| `@Published` | GameViewModel | Observable properties |
-| `@StateObject` | GameView | Own ViewModel |
-| `LazyVGrid` | GridView | Grid layout |
-| `ForEach` | GridView | Iterate cells |
-| `Button` | CellView, GameView | Tap handling |
-| `Picker` | GameView | Difficulty selection |
-| Animations | CellView | Visual feedback |
-| Closures | All Views | Event callbacks |
+| Concept        | Where Used          | Purpose               |
+| -------------- | ------------------- | --------------------- |
+| `@State`       | N/A in this project | Local view state      |
+| `@Published`   | GameViewModel       | Observable properties |
+| `@StateObject` | GameView            | Own ViewModel         |
+| `LazyVGrid`    | GridView            | Grid layout           |
+| `ForEach`      | GridView            | Iterate cells         |
+| `Button`       | CellView, GameView  | Tap handling          |
+| `Picker`       | GameView            | Difficulty selection  |
+| Animations     | CellView            | Visual feedback       |
+| Closures       | All Views           | Event callbacks       |
 
 ---
 
@@ -159,6 +170,7 @@ xcodebuild -scheme SquareQuest -destination 'platform=iOS Simulator,name=iPhone 
 ```
 
 **Keyboard Shortcut in Xcode:**
+
 - `Cmd + R` → Build & Run
 - `Cmd + .` → Stop
 - `Cmd + B` → Build only
@@ -167,14 +179,14 @@ xcodebuild -scheme SquareQuest -destination 'platform=iOS Simulator,name=iPhone 
 
 ## 📊 File Sizes
 
-| File | ~Lines | Complexity |
-|------|--------|------------|
-| Cell.swift | 25 | Simple |
-| Difficulty.swift | 40 | Simple |
-| GameViewModel.swift | 170 | Moderate |
-| CellView.swift | 50 | Simple |
-| GridView.swift | 35 | Simple |
-| GameView.swift | 130 | Moderate |
+| File                | ~Lines | Complexity |
+| ------------------- | ------ | ---------- |
+| Cell.swift          | 25     | Simple     |
+| Difficulty.swift    | 40     | Simple     |
+| GameViewModel.swift | 170    | Moderate   |
+| CellView.swift      | 50     | Simple     |
+| GridView.swift      | 35     | Simple     |
+| GameView.swift      | 130    | Moderate   |
 
 **Total: ~450 lines of code**
 
@@ -183,18 +195,24 @@ xcodebuild -scheme SquareQuest -destination 'platform=iOS Simulator,name=iPhone 
 ## 🐛 Troubleshooting
 
 ### Issue: "Cannot find 'GameView' in scope"
+
 **Solution:** Make sure all files are added to the target
+
 1. Select file in Xcode
 2. Check "Target Membership" in File Inspector
 3. Ensure "SquareQuest" is checked
 
 ### Issue: Grid doesn't resize with difficulty
+
 **Solution:** ViewModel automatically handles this via `@Published`
+
 - Check that GameView has `@StateObject private var viewModel`
 - Verify `GridView` receives `viewModel.difficulty.gridSize`
 
 ### Issue: Cells not animating
+
 **Solution:** Ensure `.animation()` modifier has `value:` parameter
+
 ```swift
 .animation(.spring(), value: cell.isSelected)
 ```
@@ -213,16 +231,19 @@ xcodebuild -scheme SquareQuest -destination 'platform=iOS Simulator,name=iPhone 
 ## ✅ Checklist for Development
 
 **Before Coding:**
+
 - [ ] Read DOCUMENTATION.md for concepts
 - [ ] Understand MVVM pattern
 - [ ] Review file structure
 
 **While Coding:**
+
 - [ ] Follow naming conventions
 - [ ] Add comments for complex logic
 - [ ] Test on simulator frequently
 
 **After Coding:**
+
 - [ ] Review CODE_REVIEW.md
 - [ ] Test all difficulty levels
 - [ ] Verify animations work
@@ -233,18 +254,22 @@ xcodebuild -scheme SquareQuest -destination 'platform=iOS Simulator,name=iPhone 
 ## 🎯 Next Features to Add (Priority Order)
 
 1. **Win Alert** (5 min)
+
    - Show alert when all matched
    - Offer "Play Again" button
 
 2. **High Score** (10 min)
+
    - Save best score with UserDefaults
    - Display alongside current score
 
 3. **Haptic Feedback** (10 min)
+
    - Vibrate on match/mismatch
    - Enhance tactile experience
 
 4. **Move Counter** (15 min)
+
    - Track number of attempts
    - Show moves/score ratio
 
@@ -256,5 +281,5 @@ xcodebuild -scheme SquareQuest -destination 'platform=iOS Simulator,name=iPhone 
 
 **Happy Coding! 🚀**
 
-*For detailed explanations, see DOCUMENTATION.md*  
-*For quality analysis, see CODE_REVIEW.md*
+_For detailed explanations, see DOCUMENTATION.md_  
+_For quality analysis, see CODE_REVIEW.md_
