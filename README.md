@@ -23,12 +23,16 @@ Square Quest is an educational SwiftUI project that implements a color-matching 
 
 ## ✨ Features
 
-- 🎨 **Colorful Grid Gameplay** - Match pairs of colored squares
+- � **Classic Flip-Card Gameplay** - Memory-matching with card flip animations
+- 🎨 **Colorful Card Design** - Beautiful gradient card backs with smooth 3D flips
+- 👁️ **Initial Preview** - See all cards for 2.5 seconds before they flip face-down
 - 🎚️ **Three Difficulty Levels** - Easy (3×3), Medium (5×5), Hard (7×7)
-- 📊 **Score Tracking** - Earn points for successful matches
-- 🎭 **Smooth Animations** - Spring-based interactions and transitions
+- ⏱️ **Session Timer** - Complete multiple rounds in 3 minutes
+- 📊 **Score Tracking** - Earn points for matches + bonus for completing rounds
+- 🔄 **Shuffle Mode** - Optional 3 shuffles per round
+- 🎭 **Smooth Animations** - 3D flip effects, spring-based interactions
 - 📱 **Responsive Design** - Adapts to different screen sizes
-- 🔄 **Reset Functionality** - Start fresh anytime
+- 💾 **Score Persistence** - Local leaderboard with UserDefaults
 
 ---
 
@@ -65,10 +69,13 @@ Square Quest is an educational SwiftUI project that implements a color-matching 
 ## 🎮 How to Play
 
 1. **Select Difficulty** - Choose Easy, Medium, or Hard from the picker
-2. **Tap Squares** - Select two squares to reveal their colors
-3. **Match Colors** - If colors match, you earn 10 points and the squares disappear
-4. **Keep Matching** - Continue until all pairs are found
-5. **Reset** - Tap "Reset Game" to start over with a new random layout
+2. **Preview Cards** - Cards briefly show their colors at the start, then flip face-down
+3. **Flip & Match** - Tap two cards to reveal their colors
+4. **Score Points** - If colors match, you earn 10 points and cards stay face-up
+5. **Try Again** - If they don't match, cards flip back face-down
+6. **Keep Matching** - Continue until all pairs are found
+7. **Next Round** - Complete rounds to earn bonus points!
+8. **Reset** - Tap "Reset Game" to start over with a new random layout
 
 ---
 
