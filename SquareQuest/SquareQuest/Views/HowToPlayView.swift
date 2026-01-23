@@ -36,7 +36,8 @@ struct HowToPlayView: View {
                     title: "Game Objective",
                     color: .blue
                 ) {
-                    Text("Match pairs of colored squares to score points. Find all matching pairs before the countdown timer reaches zero!")
+                    Text("Complete as many rounds as possible within the session time! Each round, match all colored square pairs. The more rounds you complete, the higher your score!")
+                        .font(.subheadline)
                 }
                 
                 // How to play
@@ -48,29 +49,26 @@ struct HowToPlayView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         StepView(number: 1, text: "Tap on any square to reveal its color")
                         StepView(number: 2, text: "Tap another square to find its match")
-                        StepView(number: 3, text: "If colors match, you score 10 points!")
-                        StepView(number: 4, text: "If they don't match, squares flash red and shake")
-                        StepView(number: 5, text: "Complete all pairs before time runs out!")
+                        StepView(number: 3, text: "Matched pairs earn 10 points each")
+                        StepView(number: 4, text: "Wrong matches flash red and shake")
+                        StepView(number: 5, text: "Complete the round, then start the next!")
                     }
                 }
                 
-                // Countdown Timer
+                // Session Timer
                 InstructionSection(
                     icon: "timer",
-                    title: "Countdown Timer",
+                    title: "Session Timer",
                     color: .red
                 ) {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("You play against the clock! Each difficulty has a time limit:")
+                        Text("You have 3 minutes per game session to complete as many rounds as you can!")
                             .font(.subheadline)
                         
-                        DifficultyInfo(level: "Easy", grid: "3×3", pairs: "2 minutes", color: .green)
-                        DifficultyInfo(level: "Medium", grid: "5×5", pairs: "3 minutes", color: .orange)
-                        DifficultyInfo(level: "Hard", grid: "7×7", pairs: "5 minutes", color: .red)
-                        
-                        Text("The timer turns orange at 1 minute and red at 30 seconds!")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        BulletPoint(text: "Timer counts down continuously")
+                        BulletPoint(text: "Complete rounds before time runs out")
+                        BulletPoint(text: "Each round gives bonus points")
+                        BulletPoint(text: "Timer turns red at 30 seconds!")
                     }
                 }
                 
@@ -99,9 +97,9 @@ struct HowToPlayView: View {
                 ) {
                     VStack(alignment: .leading, spacing: 8) {
                         BulletPoint(text: "Each match: +10 points")
-                        BulletPoint(text: "Faster completion = Better rank")
-                        BulletPoint(text: "Fewer moves = Higher efficiency")
-                        BulletPoint(text: "Wrong matches flash red but don't penalize score")
+                        BulletPoint(text: "Round completion: +20 bonus × round number")
+                        BulletPoint(text: "More rounds = Higher total score")
+                        BulletPoint(text: "Wrong matches flash red (no penalty)")
                     }
                 }
                 
@@ -196,6 +194,7 @@ struct InstructionSection<Content: View>: View {
             
             content()
         }
+        .frame(maxWidth: .infinity, minHeight: 140, alignment: .topLeading)
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)

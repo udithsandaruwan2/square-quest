@@ -23,21 +23,21 @@ struct DifficultySelectionView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 30) {
+            VStack(spacing: 20) {
                 // Title
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     Image(systemName: "slider.horizontal.3")
-                        .font(.system(size: 50))
+                        .font(.system(size: 44))
                         .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.8))
                     
                     Text("Select Difficulty")
-                        .font(.title)
+                        .font(.title2)
                         .fontWeight(.bold)
                 }
-                .padding(.top, 40)
+                .padding(.top, 20)
                 
                 // Difficulty cards
-                VStack(spacing: 20) {
+                VStack(spacing: 12) {
                     ForEach(Difficulty.allCases, id: \.self) { difficulty in
                         DifficultyCard(
                             difficulty: difficulty,
@@ -54,18 +54,20 @@ struct DifficultySelectionView: View {
                 Toggle(isOn: $isShuffleMode) {
                     HStack {
                         Image(systemName: "shuffle")
-                            .font(.title2)
-                        VStack(alignment: .leading) {
+                            .font(.title3)
+                        VStack(alignment: .leading, spacing: 2) {
                             Text("Shuffle Mode")
-                                .font(.headline)
-                            Text("Get 3 shuffles during the game")
-                                .font(.caption)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            Text("Get 3 shuffles per round")
+                                .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
                     }
                 }
                 .tint(Color(red: 0.3, green: 0.4, blue: 0.9))
-                .padding()
+                .padding(.vertical, 12)
+                .padding(.horizontal)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color(.systemBackground))
@@ -73,14 +75,27 @@ struct DifficultySelectionView: View {
                 )
                 .padding(.horizontal)
                 
-                Spacer()
+                // Game info
+                VStack(spacing: 2) {
+                    Text("3 minute session • Complete multiple rounds")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("Earn bonus points for each round!")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
                 
                 // Start button
-                NavigationLink(destination: GameView(
-                    viewModel: GameViewModel(scoreManager: scoreManager),
-                    difficulty: selectedDifficulty,
-                    isShuffleMode: isShuffleMode
-                )) {
+                NavigationLink(destination: {
+                    let viewModel = GameViewModel(scoreManager: scoreManager)
+                    viewModel.difficulty = selectedDifficulty
+                    viewModel.isShuffleMode = isShuffleMode
+                    return GameView(
+                        viewModel: viewModel,
+                        difficulty: selectedDifficulty,
+                        isShuffleMode: isShuffleMode
+                    )
+                }()) {
                     HStack {
                         Image(systemName: "play.fill")
                         Text("Start Game")

@@ -65,7 +65,20 @@ struct GameView: View {
                 }
             }
         }
-        .alert("🎉 Congratulations!", isPresented: $viewModel.showWinAlert) {
+        .alert("✨ Round Complete!", isPresented: $viewModel.showRoundCompleteAlert) {
+            Button("Next Round") {
+                withAnimation {
+                    viewModel.startNewRound()
+                }
+            }
+            Button("End Session", role: .cancel) {
+                viewModel.endSession()
+                dismiss()
+            }
+        } message: {
+            Text("Round \(viewModel.roundNumber) complete!\n\n+\(viewModel.roundBonus) Bonus Points\nTotal Score: \(viewModel.score)\n\nKeep going while time remains!")
+        }
+        .alert("⏰ Session Complete!", isPresented: $viewModel.showLossAlert) {
             Button("Play Again") {
                 withAnimation {
                     viewModel.difficulty = difficulty
@@ -77,21 +90,7 @@ struct GameView: View {
                 dismiss()
             }
         } message: {
-            Text("You won with a score of \(viewModel.score)!\n\nTime: \(viewModel.formattedTime)\nMoves: \(viewModel.totalMoves)\n\nAll pairs matched successfully. 🏆")
-        }
-        .alert("⏰ Time's Up!", isPresented: $viewModel.showLossAlert) {
-            Button("Try Again") {
-                withAnimation {
-                    viewModel.difficulty = difficulty
-                    viewModel.isShuffleMode = isShuffleMode
-                    viewModel.resetGame()
-                }
-            }
-            Button("Back to Menu", role: .cancel) {
-                dismiss()
-            }
-        } message: {
-            Text("You ran out of time!\n\nScore: \(viewModel.score)\nMoves: \(viewModel.totalMoves)\n\nTry to be faster next time!")
+            Text("Time's up!\n\nFinal Score: \(viewModel.score)\nRounds Completed: \(viewModel.roundsCompleted)\nMoves: \(viewModel.totalMoves)\n\nGreat job!")
         }
         .onAppear {
             viewModel.difficulty = difficulty
@@ -110,12 +109,20 @@ struct GameView: View {
                 color: .yellow
             )
             
+            // Round
+            StatCard(
+                icon: "arrow.triangle.2.circlepath",
+                value: "R\(viewModel.roundNumber)",
+                label: "Round",
+                color: .purple
+            )
+            
             // Time
             StatCard(
                 icon: "clock.fill",
                 value: viewModel.formattedTime,
                 label: "Time",
-                color: .blue
+                color: viewModel.timeRemaining <= 30 ? .red : .blue
             )
             
             // Moves

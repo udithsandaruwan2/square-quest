@@ -16,21 +16,21 @@ class GameViewModel: ObservableObject {
     @Published var selectedCells: [UUID] = []
     @Published var showWinAlert: Bool = false
     @Published var showLossAlert: Bool = false
+    @Published var showRoundCompleteAlert: Bool = false
     @Published var timeRemaining: Int = 0
     @Published var totalMoves: Int = 0
+    @Published var roundNumber: Int = 1
+    @Published var roundsCompleted: Int = 0
     @Published var isShuffleMode: Bool = false
     @Published var shufflesRemaining: Int = 3
     @Published var wrongMatchShake: Bool = false
     
     private var timer: Timer?
     private var scoreManager: ScoreManager?
+    private let sessionTimeLimit: Int = 180  // 3 minutes for entire session
     
-    private var timeLimit: Int {
-        switch difficulty {
-        case .easy: return 120    // 2 minutes
-        case .medium: return 180  // 3 minutes
-        case .hard: return 300    // 5 minutes
-        }
+    var roundBonus: Int {
+        roundNumber * 20  // Bonus points for each round completed
     }
     
     init(scoreManager: ScoreManager? = nil) {
@@ -38,18 +38,31 @@ class GameViewModel: ObservableObject {
         setupGame()
     }
     
-    /// Sets up a new game with the current difficulty
+    /// Sets up a new game session with the current difficulty
     func setupGame() {
         score = 0
         selectedCells = []
         showWinAlert = false
         showLossAlert = false
-        timeRemaining = timeLimit
+        showRoundCompleteAlert = false
+        timeRemaining = sessionTimeLimit
         totalMoves = 0
+        roundNumber = 1
+        roundsCompleted = 0
         shufflesRemaining = isShuffleMode ? 3 : 0
         wrongMatchShake = false
         cells = generateCells()
         startTimer()
+    }
+    
+    /// Starts a new round (keeps timer and total score)
+    func startNewRound() {
+        selectedCells = []
+        showRoundCompleteAlert = false
+        roundNumber += 1
+        shufflesRemaining = isShuffleMode ? 3 : 0
+        wrongMatchShake = false
+        cells = generateCells()
     }
     
     /// Generates cells with matching pairs of colors
@@ -174,37 +187,45 @@ class GameViewModel: ObservableObject {
         selectedCells.removeAll()
     }
     
-    /// Checks if all cells are matched (game complete)
+    /// Checks if round is complete (all pairs matched)
     private func checkGameComplete() {
         // Count how many cells are matched
         let matchedCount = cells.filter { $0.isMatched }.count
         
         // Since we have odd number of cells (9, 25, 49), there's always 1 leftover
-        // Win when all pairs are matched (total cells - 1)
+        // Round complete when all pairs are matched (total cells - 1)
         let totalCells = difficulty.totalCells
         let maxMatchable = totalCells - 1
         
         if matchedCount == maxMatchable {
-            // Game complete! Stop timer and save score
-            stopTimer()
-            
-            // Save score if score manager exists
-            if let scoreManager = scoreManager {
-                let gameScore = GameScore(
-                    score: score,
-                    difficulty: difficulty,
-                    timeInSeconds: timeLimit - timeRemaining,  // Actual time used
-                    matchedPairs: matchedCount / 2,
-                    totalMoves: totalMoves,
-                    isShuffleMode: isShuffleMode
-                )
-                scoreManager.saveScore(gameScore)
-            }
+            // Round complete! Add bonus and start next round
+            score += roundBonus
+            roundsCompleted += 1
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.showWinAlert = true
+                self.showRoundCompleteAlert = true
             }
         }
+    }
+    
+    /// Called when session ends (time runs out or user chooses to end)
+    func endSession() {
+        stopTimer()
+        
+        // Save final score if score manager exists
+        if let scoreManager = scoreManager {
+            let gameScore = GameScore(
+                score: score,
+                difficulty: difficulty,
+                timeInSeconds: sessionTimeLimit - timeRemaining,
+                matchedPairs: roundsCompleted,
+                totalMoves: totalMoves,
+                isShuffleMode: isShuffleMode
+            )
+            scoreManager.saveScore(gameScore)
+        }
+        
+        showLossAlert = true
     }
     
     /// Changes the difficulty and restarts the game
@@ -225,7 +246,7 @@ class GameViewModel: ObservableObject {
         guard isShuffleMode && shufflesRemaining > 0 else { return }
         
         // Get all unmatched cells
-        var unmatchedCells = cells.filter { !$0.isMatched }
+        let unmatchedCells = cells.filter { !$0.isMatched }
         
         // Shuffle their colors
         var colors = unmatchedCells.map { $0.color }
@@ -244,7 +265,7 @@ class GameViewModel: ObservableObject {
         resetSelection()
     }
     
-    /// Start the game timer (countdown)
+    /// Start the session timer (countdown)
     private func startTimer() {
         stopTimer() // Stop any existing timer
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -253,11 +274,8 @@ class GameViewModel: ObservableObject {
             if self.timeRemaining > 0 {
                 self.timeRemaining -= 1
             } else {
-                // Time's up - game over!
-                self.stopTimer()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.showLossAlert = true
-                }
+                // Time's up - session over!
+                self.endSession()
             }
         }
     }
