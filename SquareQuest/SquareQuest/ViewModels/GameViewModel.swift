@@ -15,8 +15,26 @@ class GameViewModel: ObservableObject {
     @Published var score: Int = 0
     @Published var selectedCells: [UUID] = []
     @Published var showWinAlert: Bool = false
+    @Published var showLossAlert: Bool = false
+    @Published var timeRemaining: Int = 0
+    @Published var totalMoves: Int = 0
+    @Published var isShuffleMode: Bool = false
+    @Published var shufflesRemaining: Int = 3
+    @Published var wrongMatchShake: Bool = false
     
-    init() {
+    private var timer: Timer?
+    private var scoreManager: ScoreManager?
+    
+    private var timeLimit: Int {
+        switch difficulty {
+        case .easy: return 120    // 2 minutes
+        case .medium: return 180  // 3 minutes
+        case .hard: return 300    // 5 minutes
+        }
+    }
+    
+    init(scoreManager: ScoreManager? = nil) {
+        self.scoreManager = scoreManager
         setupGame()
     }
     
@@ -25,7 +43,13 @@ class GameViewModel: ObservableObject {
         score = 0
         selectedCells = []
         showWinAlert = false
+        showLossAlert = false
+        timeRemaining = timeLimit
+        totalMoves = 0
+        shufflesRemaining = isShuffleMode ? 3 : 0
+        wrongMatchShake = false
         cells = generateCells()
+        startTimer()
     }
     
     /// Generates cells with matching pairs of colors
@@ -85,6 +109,11 @@ class GameViewModel: ObservableObject {
         cells[index].isSelected = true
         selectedCells.append(cell.id)
         
+        // Increment move counter when selecting second cell
+        if selectedCells.count == 2 {
+            totalMoves += 1
+        }
+        
         // If we now have 2 cells selected, check for a match
         if selectedCells.count == 2 {
             checkForMatch()
@@ -119,7 +148,16 @@ class GameViewModel: ObservableObject {
                 self.checkGameComplete()
             }
         } else {
-            // No match - reset after a delay
+            // No match - show error feedback with shake animation
+            withAnimation(.easeInOut(duration: 0.1).repeatCount(3, autoreverses: true)) {
+                wrongMatchShake = true
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.wrongMatchShake = false
+            }
+            
+            // Reset after a delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.resetSelection()
             }
@@ -147,7 +185,22 @@ class GameViewModel: ObservableObject {
         let maxMatchable = totalCells - 1
         
         if matchedCount == maxMatchable {
-            // Game complete! Show win alert
+            // Game complete! Stop timer and save score
+            stopTimer()
+            
+            // Save score if score manager exists
+            if let scoreManager = scoreManager {
+                let gameScore = GameScore(
+                    score: score,
+                    difficulty: difficulty,
+                    timeInSeconds: timeLimit - timeRemaining,  // Actual time used
+                    matchedPairs: matchedCount / 2,
+                    totalMoves: totalMoves,
+                    isShuffleMode: isShuffleMode
+                )
+                scoreManager.saveScore(gameScore)
+            }
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.showWinAlert = true
             }
@@ -156,12 +209,84 @@ class GameViewModel: ObservableObject {
     
     /// Changes the difficulty and restarts the game
     func changeDifficulty(to newDifficulty: Difficulty) {
+        stopTimer()
         difficulty = newDifficulty
         setupGame()
     }
     
     /// Resets the game with current difficulty
     func resetGame() {
+        stopTimer()
         setupGame()
+    }
+    
+    /// Shuffles the grid (only in shuffle mode)
+    func shuffleGrid() {
+        guard isShuffleMode && shufflesRemaining > 0 else { return }
+        
+        // Get all unmatched cells
+        var unmatchedCells = cells.filter { !$0.isMatched }
+        
+        // Shuffle their colors
+        var colors = unmatchedCells.map { $0.color }
+        colors.shuffle()
+        
+        // Apply shuffled colors back
+        var colorIndex = 0
+        for i in 0..<cells.count {
+            if !cells[i].isMatched {
+                cells[i].color = colors[colorIndex]
+                colorIndex += 1
+            }
+        }
+        
+        shufflesRemaining -= 1
+        resetSelection()
+    }
+    
+    /// Start the game timer (countdown)
+    private func startTimer() {
+        stopTimer() // Stop any existing timer
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if self.timeRemaining > 0 {
+                self.timeRemaining -= 1
+            } else {
+                // Time's up - game over!
+                self.stopTimer()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.showLossAlert = true
+                }
+            }
+        }
+    }
+    
+    /// Stop the game timer
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    /// Formatted time string (countdown)
+    var formattedTime: String {
+        let minutes = timeRemaining / 60
+        let seconds = timeRemaining % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    /// Color for timer display (red when running out of time)
+    var timerColor: Color {
+        if timeRemaining <= 30 {
+            return .red
+        } else if timeRemaining <= 60 {
+            return .orange
+        } else {
+            return .primary
+        }
+    }
+    
+    deinit {
+        stopTimer()
     }
 }

@@ -11,12 +11,13 @@ import SwiftUI
 struct GridView: View {
     let cells: [Cell]
     let gridSize: Int
+    let wrongMatchShake: Bool
     let onCellTap: (Cell) -> Void
     
     var body: some View {
         LazyVGrid(columns: columns, spacing: 8) {
             ForEach(cells) { cell in
-                CellView(cell: cell) {
+                CellView(cell: cell, wrongMatchShake: wrongMatchShake) {
                     onCellTap(cell)
                 }
             }
@@ -37,5 +38,5 @@ struct GridView: View {
         Cell(color: .pink), Cell(color: .cyan), Cell(color: .mint)
     ]
     
-    GridView(cells: sampleCells, gridSize: 3) { _ in }
+    GridView(cells: sampleCells, gridSize: 3, wrongMatchShake: false) { _ in }
 }
