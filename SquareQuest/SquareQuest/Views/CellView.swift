@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// A single cell in the game grid
+/// A single cell in the game grid with flip animation
 struct CellView: View {
     let cell: Cell
     let wrongMatchShake: Bool
@@ -17,27 +17,39 @@ struct CellView: View {
     
     var body: some View {
         Button(action: onTap) {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(cell.color)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(borderColor, lineWidth: borderWidth)
-                )
-                .overlay(
-                    // Red flash overlay for wrong matches
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.red.opacity(cell.isSelected && wrongMatchShake ? 0.4 : 0))
-                )
-                .opacity(cell.isMatched ? 0.3 : 1.0)
-                .scaleEffect(cell.isSelected ? 0.9 : 1.0)
-                .offset(x: cell.isSelected && wrongMatchShake ? shakeOffset : 0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: cell.isSelected)
-                .animation(.easeOut(duration: 0.3), value: cell.isMatched)
-                .onChange(of: wrongMatchShake) { _, newValue in
-                    if newValue && cell.isSelected {
-                        performShake()
-                    }
+            ZStack {
+                // Card back (when face down)
+                CardBackView()
+                    .opacity(cell.isFaceUp ? 0 : 1)
+                    .rotation3DEffect(
+                        .degrees(cell.isFaceUp ? 90 : 0),
+                        axis: (x: 0, y: 1, z: 0)
+                    )
+                
+                // Card front (when face up)
+                CardFrontView(color: cell.color, borderColor: borderColor, borderWidth: borderWidth)
+                    .opacity(cell.isFaceUp ? 1 : 0)
+                    .rotation3DEffect(
+                        .degrees(cell.isFaceUp ? 0 : -90),
+                        axis: (x: 0, y: 1, z: 0)
+                    )
+                    .overlay(
+                        // Red flash overlay for wrong matches
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.red.opacity(cell.isSelected && wrongMatchShake ? 0.4 : 0))
+                    )
+            }
+            .opacity(cell.isMatched ? 0.4 : 1.0)
+            .scaleEffect(cell.isSelected && !cell.isMatched ? 0.95 : 1.0)
+            .offset(x: cell.isSelected && wrongMatchShake ? shakeOffset : 0)
+            .animation(.easeInOut(duration: 0.3), value: cell.isFaceUp)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: cell.isSelected)
+            .animation(.easeOut(duration: 0.4), value: cell.isMatched)
+            .onChange(of: wrongMatchShake) { _, newValue in
+                if newValue && cell.isSelected {
+                    performShake()
                 }
+            }
         }
         .disabled(cell.isMatched)
         .aspectRatio(1, contentMode: .fit)
@@ -74,11 +86,56 @@ struct CellView: View {
     }
 }
 
+/// Card back design (face-down state)
+struct CardBackView: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(
+                LinearGradient(
+                    colors: [Color(red: 0.2, green: 0.4, blue: 0.8), Color(red: 0.3, green: 0.5, blue: 0.9)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(
+                ZStack {
+                    // Pattern design
+                    RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(Color.white.opacity(0.3), lineWidth: 2)
+                        .padding(4)
+                    
+                    // Question mark or pattern
+                    Image(systemName: "square.grid.3x3.fill")
+                        .font(.title)
+                        .foregroundColor(.white.opacity(0.4))
+                }
+            )
+            .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
+    }
+}
+
+/// Card front design (face-up state showing color)
+struct CardFrontView: View {
+    let color: Color
+    let borderColor: Color
+    let borderWidth: CGFloat
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(color)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(borderColor, lineWidth: borderWidth)
+            )
+            .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 1)
+    }
+}
+
 #Preview {
     HStack(spacing: 20) {
-        CellView(cell: Cell(color: .red, isSelected: false, isMatched: false), wrongMatchShake: false) {}
-        CellView(cell: Cell(color: .blue, isSelected: true, isMatched: false), wrongMatchShake: false) {}
-        CellView(cell: Cell(color: .green, isSelected: false, isMatched: true), wrongMatchShake: false) {}
+        CellView(cell: Cell(color: .red, isFaceUp: false), wrongMatchShake: false) {}
+        CellView(cell: Cell(color: .blue, isSelected: true, isFaceUp: true), wrongMatchShake: false) {}
+        CellView(cell: Cell(color: .green, isMatched: true, isFaceUp: true), wrongMatchShake: false) {}
     }
     .padding()
     .frame(height: 100)

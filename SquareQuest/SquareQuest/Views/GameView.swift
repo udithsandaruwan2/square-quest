@@ -223,5 +223,6 @@ struct StatCard: View {
             difficulty: .medium,
             isShuffleMode: true
         )
+        .environmentObject(ScoreManager())
     }
 }

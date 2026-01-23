@@ -36,7 +36,7 @@ struct HowToPlayView: View {
                     title: "Game Objective",
                     color: .blue
                 ) {
-                    Text("Complete as many rounds as possible within the session time! Each round, match all colored square pairs. The more rounds you complete, the higher your score!")
+                    Text("Complete as many rounds as possible within the session time! Flip and match all colored card pairs. The more rounds you complete, the higher your score!")
                         .font(.subheadline)
                 }
                 
@@ -47,11 +47,12 @@ struct HowToPlayView: View {
                     color: .green
                 ) {
                     VStack(alignment: .leading, spacing: 12) {
-                        StepView(number: 1, text: "Tap on any square to reveal its color")
-                        StepView(number: 2, text: "Tap another square to find its match")
-                        StepView(number: 3, text: "Matched pairs earn 10 points each")
-                        StepView(number: 4, text: "Wrong matches flash red and shake")
-                        StepView(number: 5, text: "Complete the round, then start the next!")
+                        StepView(number: 1, text: "Cards show briefly at the start, then flip face-down")
+                        StepView(number: 2, text: "Tap a card to flip it and reveal its color")
+                        StepView(number: 3, text: "Tap another card to find its match")
+                        StepView(number: 4, text: "If they match, both stay face-up (+10 points)")
+                        StepView(number: 5, text: "If not, both flip back face-down (try again!)")
+                        StepView(number: 6, text: "Complete the round, then start the next!")
                     }
                 }
                 
@@ -110,12 +111,13 @@ struct HowToPlayView: View {
                     color: .purple
                 ) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("In Shuffle Mode, you get 3 shuffles to rearrange unmatched squares.")
+                        Text("In Shuffle Mode, you get 3 shuffles to rearrange face-down cards.")
                             .font(.subheadline)
                         
-                        BulletPoint(text: "Tap the shuffle button to rearrange")
-                        BulletPoint(text: "Only unmatched squares shuffle")
-                        BulletPoint(text: "Use wisely - you only get 3!")
+                        BulletPoint(text: "Tap the shuffle button to rearrange cards")
+                        BulletPoint(text: "Only unmatched cards shuffle")
+                        BulletPoint(text: "Cards flip back face-down after shuffle")
+                        BulletPoint(text: "Use wisely - you only get 3 per round!")
                         BulletPoint(text: "Perfect for when you're stuck!")
                     }
                 }
@@ -127,11 +129,12 @@ struct HowToPlayView: View {
                     color: .cyan
                 ) {
                     VStack(alignment: .leading, spacing: 8) {
-                        BulletPoint(text: "Remember square positions after seeing them")
-                        BulletPoint(text: "Start with corners and edges")
+                        BulletPoint(text: "Watch carefully during the initial preview!")
+                        BulletPoint(text: "Remember card positions as you reveal them")
+                        BulletPoint(text: "Start with corners and edges for easier tracking")
                         BulletPoint(text: "Work systematically across the grid")
-                        BulletPoint(text: "The timer tracks your speed - be quick!")
-                        BulletPoint(text: "There's always one unpaired square")
+                        BulletPoint(text: "The timer tracks your speed - be quick but accurate!")
+                        BulletPoint(text: "There's always one unpaired card")
                     }
                 }
                 

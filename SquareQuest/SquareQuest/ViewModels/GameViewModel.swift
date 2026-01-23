@@ -24,10 +24,13 @@ class GameViewModel: ObservableObject {
     @Published var isShuffleMode: Bool = false
     @Published var shufflesRemaining: Int = 3
     @Published var wrongMatchShake: Bool = false
+    @Published var isInitialPreview: Bool = false  // Cards showing at start
     
     private var timer: Timer?
+    private var previewTimer: Timer?
     private var scoreManager: ScoreManager?
-    private let sessionTimeLimit: Int = 180  // 3 minutes for entire session
+    private let sessionTimeLimit: Int = 120  // 3 minutes for entire session
+    private let previewDuration: TimeInterval = 1.5  // Show cards for 2.5 seconds at start
     
     var roundBonus: Int {
         roundNumber * 20  // Bonus points for each round completed
@@ -52,6 +55,7 @@ class GameViewModel: ObservableObject {
         shufflesRemaining = isShuffleMode ? 3 : 0
         wrongMatchShake = false
         cells = generateCells()
+        startInitialPreview()
         startTimer()
     }
     
@@ -63,6 +67,7 @@ class GameViewModel: ObservableObject {
         shufflesRemaining = isShuffleMode ? 3 : 0
         wrongMatchShake = false
         cells = generateCells()
+        startInitialPreview()
     }
     
     /// Generates cells with matching pairs of colors
@@ -100,36 +105,33 @@ class GameViewModel: ObservableObject {
     
     /// Handles cell selection logic
     func selectCell(_ cell: Cell) {
-        // Don't select if already matched
+        // Don't select during initial preview
+        guard !isInitialPreview else { return }
+        
+        // Don't select if already matched or already face up and selected
         guard !cell.isMatched else { return }
+        guard !cell.isSelected else { return }
+        
+        // If we already have 2 cells selected, don't allow more
+        if selectedCells.count >= 2 {
+            return
+        }
         
         // Find the cell index
         guard let index = cells.firstIndex(where: { $0.id == cell.id }) else { return }
         
-        // If this cell is already selected, deselect it
-        if selectedCells.contains(cell.id) {
-            cells[index].isSelected = false
-            selectedCells.removeAll { $0 == cell.id }
-            return
-        }
-        
-        // If we already have 2 cells selected, reset them first
-        if selectedCells.count >= 2 {
-            resetSelection()
-        }
-        
-        // Select the current cell
+        // Flip the card face up and mark as selected
+        cells[index].isFaceUp = true
         cells[index].isSelected = true
         selectedCells.append(cell.id)
         
         // Increment move counter when selecting second cell
         if selectedCells.count == 2 {
             totalMoves += 1
-        }
-        
-        // If we now have 2 cells selected, check for a match
-        if selectedCells.count == 2 {
-            checkForMatch()
+            // Check for match after a brief delay to show both cards
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                self.checkForMatch()
+            }
         }
     }
     
@@ -149,11 +151,12 @@ class GameViewModel: ObservableObject {
         // Check if colors match
         if firstCell.color == secondCell.color {
             // Match found!
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 self.cells[firstIndex].isMatched = true
                 self.cells[secondIndex].isMatched = true
                 self.cells[firstIndex].isSelected = false
                 self.cells[secondIndex].isSelected = false
+                // Keep cards face up when matched
                 self.selectedCells.removeAll()
                 self.score += 10
                 
@@ -170,17 +173,21 @@ class GameViewModel: ObservableObject {
                 self.wrongMatchShake = false
             }
             
-            // Reset after a delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            // Flip cards back down after showing mismatch
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 self.resetSelection()
             }
         }
     }
     
-    /// Resets the current selection
+    /// Resets the current selection and flips cards back down
     private func resetSelection() {
         for cellId in selectedCells {
             if let index = cells.firstIndex(where: { $0.id == cellId }) {
+                // Flip card back down if not matched
+                if !cells[index].isMatched {
+                    cells[index].isFaceUp = false
+                }
                 cells[index].isSelected = false
             }
         }
@@ -252,17 +259,19 @@ class GameViewModel: ObservableObject {
         var colors = unmatchedCells.map { $0.color }
         colors.shuffle()
         
-        // Apply shuffled colors back
+        // Apply shuffled colors back and ensure face down
         var colorIndex = 0
         for i in 0..<cells.count {
             if !cells[i].isMatched {
                 cells[i].color = colors[colorIndex]
+                cells[i].isFaceUp = false
+                cells[i].isSelected = false
                 colorIndex += 1
             }
         }
         
         shufflesRemaining -= 1
-        resetSelection()
+        selectedCells.removeAll()
     }
     
     /// Start the session timer (countdown)
@@ -304,7 +313,36 @@ class GameViewModel: ObservableObject {
         }
     }
     
+    /// Show all cards for a brief moment at the start of each round
+    private func startInitialPreview() {
+        isInitialPreview = true
+        
+        // Show all cards face up
+        for i in 0..<cells.count {
+            cells[i].isFaceUp = true
+        }
+        
+        // After preview duration, flip all cards face down
+        previewTimer = Timer.scheduledTimer(withTimeInterval: previewDuration, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            
+            withAnimation(.easeInOut(duration: 0.3)) {
+                for i in 0..<self.cells.count {
+                    self.cells[i].isFaceUp = false
+                }
+                self.isInitialPreview = false
+            }
+        }
+    }
+    
+    /// Stop the preview timer
+    private func stopPreviewTimer() {
+        previewTimer?.invalidate()
+        previewTimer = nil
+    }
+    
     deinit {
         stopTimer()
+        stopPreviewTimer()
     }
 }

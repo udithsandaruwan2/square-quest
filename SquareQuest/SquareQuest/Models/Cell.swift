@@ -13,11 +13,13 @@ struct Cell: Identifiable, Equatable {
     var color: Color
     var isSelected: Bool
     var isMatched: Bool
+    var isFaceUp: Bool  // Whether the card is flipped to show its color
     
-    init(id: UUID = UUID(), color: Color, isSelected: Bool = false, isMatched: Bool = false) {
+    init(id: UUID = UUID(), color: Color, isSelected: Bool = false, isMatched: Bool = false, isFaceUp: Bool = false) {
         self.id = id
         self.color = color
         self.isSelected = isSelected
         self.isMatched = isMatched
+        self.isFaceUp = isFaceUp
     }
 }

@@ -33,9 +33,9 @@ struct GridView: View {
 
 #Preview {
     let sampleCells = [
-        Cell(color: .red), Cell(color: .blue), Cell(color: .green),
-        Cell(color: .yellow), Cell(color: .orange), Cell(color: .purple),
-        Cell(color: .pink), Cell(color: .cyan), Cell(color: .mint)
+        Cell(color: .red, isFaceUp: true), Cell(color: .blue, isFaceUp: false), Cell(color: .green, isFaceUp: true),
+        Cell(color: .yellow, isFaceUp: false), Cell(color: .orange, isFaceUp: true), Cell(color: .purple, isFaceUp: false),
+        Cell(color: .pink, isFaceUp: true), Cell(color: .cyan, isFaceUp: false), Cell(color: .mint, isFaceUp: true)
     ]
     
     GridView(cells: sampleCells, gridSize: 3, wrongMatchShake: false) { _ in }
