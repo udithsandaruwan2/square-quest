@@ -8,8 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var scoreManager = ScoreManager()
+    
     var body: some View {
-        GameView()
+        HomeView()
+            .environmentObject(scoreManager)
     }
 }
 
